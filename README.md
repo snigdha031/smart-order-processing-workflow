@@ -251,12 +251,6 @@ Tracks workflow execution events.
 ![Duplicate Order Detection](screenshots/workflow-duplicate-detection.png)
 
 
-## Execution Logs Table
-
-```md
-![Execution Logs Table](screenshots/execution-logs-table.png)
-```
-
 ---
 
 # 🧪 Example API Request
