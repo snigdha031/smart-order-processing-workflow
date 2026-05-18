@@ -74,6 +74,7 @@ Retry Handling
 Execution Logging
    ↓
 API Response
+```
 
 ## ⚙️ Tech Stack
 
@@ -222,7 +223,7 @@ Tracks workflow execution events.
 **Execution Logs Table**
 ![Execution Logs Table](screenshots/execution-logs-table.png)
 
-🧪 Example API Request
+## 🧪 Example API Request
 JSON
 {
   "order_id": "ORD-1001",
@@ -231,7 +232,7 @@ JSON
   "total_amount": 120
 }
 
-🔥 Engineering Highlights
+## 🔥 Engineering Highlights
 This project focuses heavily on backend workflow reliability concepts rather than simple automation.
 
 Key backend engineering patterns implemented:
@@ -252,7 +253,7 @@ Workflow resilience
 
 Audit logging
 
-🚀 Future Improvements
+## 🚀 Future Improvements
 Potential future enhancements:
 
 Inventory management integration
@@ -271,5 +272,5 @@ Authentication & authorization
 
 Payment provider integration (Stripe)
 
-👩‍💻 Author
+## 👩‍💻 Author
 Built by Snigdha Raghavan as a workflow engineering and backend automation project using n8n and Supabase.
