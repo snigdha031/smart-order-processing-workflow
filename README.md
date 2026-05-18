@@ -88,7 +88,9 @@ API Response
 
 ---
 
-🗂️ Project Structure
+## 🗂️ Project Structure
+
+```text
 smart-order-system/
 │
 ├── README.md
@@ -110,9 +112,10 @@ smart-order-system/
 │   ├── workflow-success-logging.png
 │   ├── workflow-validation-failure.png
 │   └── workflow-duplicate-detection.png
+```
 
 
-🔄 Workflow Scenarios
+## 🔄 Workflow Scenarios
 ✅ Successful Order Processing
 Order received through webhook
 
@@ -128,7 +131,7 @@ Success logged
 
 HTTP 201 response returned
 
-❌ Validation Failure Scenario
+## ❌ Validation Failure Scenario
 If required fields are missing:
 
 Workflow stops early
@@ -274,3 +277,9 @@ Payment provider integration (Stripe)
 
 ## 👩‍💻 Author
 Built by Snigdha Raghavan as a workflow engineering and backend automation project using n8n and Supabase.
+
+---
+
+### Why this fixes it:
+1.  **Code Blocks:** Wrapping your file tree and JSON blocks in ` ```text ` or ` ```json ` tells GitHub to respect your exact spacing and add syntax highlighting.
+2.  **Lists:** Adding the asterisk and a space (`* `) in front of your scenarios and highlights forces GitHub to render them as clean, vertical bulleted lists instead of wrapping them into a single sentence.
