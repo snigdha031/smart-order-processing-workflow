@@ -115,80 +115,88 @@ smart-order-system/
 ```
 
 
-## 🔄 Workflow Scenarios
-✅ Successful Order Processing
-Order received through webhook
+# 🔄 Workflow Scenarios
 
-Validation passes
+## ✅ Successful Order Processing
 
-Duplicate check passes
+### Flow
 
-Order inserted into database
+1. Order received through webhook
+2. Validation passes
+3. Duplicate check passes
+4. Order inserted into database
+5. Payment succeeds
+6. Success logged
+7. HTTP `201` returned
 
-Payment succeeds
-
-Success logged
-
-HTTP 201 response returned
+---
 
 ## ❌ Validation Failure Scenario
+
 If required fields are missing:
 
-Workflow stops early
+- Workflow stops early
+- Validation failure is logged
+- HTTP `400` returned
 
-Validation failure logged
+### Example Response
 
-HTTP 400 returned
-
-Example response:
-
-JSON
+```json
 {
   "success": false,
   "error": "Email is required"
 }
-❌ Duplicate Order Scenario
-If order already exists:
+```
 
-Duplicate detected before insert
+---
 
-Duplicate event logged
+## ❌ Duplicate Order Scenario
 
-HTTP 409 returned
+If the order already exists:
 
-Example response:
+- Duplicate detected before insert
+- Duplicate event logged
+- HTTP `409` returned
 
-JSON
+### Example Response
+
+```json
 {
   "success": false,
   "error": "Duplicate order ID"
 }
-❌ Payment Failure Scenario
-If payment gateway fails:
+```
 
-Retries triggered automatically
+---
 
-Workflow attempts recovery
+## ❌ Payment Failure Scenario
 
-Payment failure logged
+If payment processing fails:
 
-HTTP 500 returned after retry exhaustion
+- Retries triggered automatically
+- Workflow attempts recovery
+- Payment failure logged
+- HTTP `500` returned after retry exhaustion
 
-Example response:
+### Example Response
 
-JSON
+```json
 {
   "success": false,
   "error": "Payment processing failed"
 }
+```
 
-## 📊 Database Tables
+---
 
-### `orders`
+# 📊 Database Tables
+
+## `orders`
+
 Stores successfully created orders.
 
 | Column | Purpose |
-| :--- | :--- |
+|---|---|
 | `order_id` | Unique order identifier |
 | `customer_name` | Customer name |
 | `email` | Customer email |
@@ -196,90 +204,106 @@ Stores successfully created orders.
 | `status` | Order status |
 | `created_at` | Timestamp |
 
-### `execution_logs`
+---
+
+## `execution_logs`
+
 Tracks workflow execution events.
 
 | Column | Purpose |
-| :--- | :--- |
+|---|---|
 | `order_id` | Related order |
 | `status` | success / duplicate / validation_failed / payment_failed |
 | `message` | Execution details |
 | `created_at` | Timestamp |
 
-## 📸 Screenshots
+---
 
-**Workflow Overview**
+# 📸 Screenshots
+
+## Workflow Overview
+
+```md
 ![Workflow Overview](screenshots/workflow-overview.png)
+```
 
-**Successful API Response (201)**
+## Successful API Response (201)
+
+```md
 ![API Success Response](screenshots/api-success-response-201.png)
+```
 
-**Validation Failure (400)**
+## Validation Failure (400)
+
+```md
 ![Validation Failure](screenshots/api-validation-error-400.png)
+```
 
-**Duplicate Order Error (409)**
+## Duplicate Order Error (409)
+
+```md
 ![Duplicate Order Error](screenshots/api-duplicate-error-409.png)
+```
 
-**Duplicate Order Detection Workflow**
+## Duplicate Order Detection Workflow
+
+```md
 ![Duplicate Order Detection](screenshots/workflow-duplicate-detection.png)
+```
 
-**Execution Logs Table**
+## Execution Logs Table
+
+```md
 ![Execution Logs Table](screenshots/execution-logs-table.png)
+```
 
-## 🧪 Example API Request
-JSON
+---
+
+# 🧪 Example API Request
+
+```json
 {
   "order_id": "ORD-1001",
   "customer_name": "John Doe",
   "email": "john@example.com",
   "total_amount": 120
 }
-
-## 🔥 Engineering Highlights
-This project focuses heavily on backend workflow reliability concepts rather than simple automation.
-
-Key backend engineering patterns implemented:
-
-Validation gates
-
-Idempotency protection
-
-Retry handling
-
-Failure recovery
-
-Execution observability
-
-Structured API responses
-
-Workflow resilience
-
-Audit logging
-
-## 🚀 Future Improvements
-Potential future enhancements:
-
-Inventory management integration
-
-AI-based fraud detection
-
-Slack/Discord notifications
-
-Dead-letter queue implementation
-
-Grafana monitoring dashboard
-
-Rate limiting
-
-Authentication & authorization
-
-Payment provider integration (Stripe)
-
-## 👩‍💻 Author
-Built by Snigdha Raghavan as a workflow engineering and backend automation project using n8n and Supabase.
+```
 
 ---
 
-### Why this fixes it:
-1.  **Code Blocks:** Wrapping your file tree and JSON blocks in ` ```text ` or ` ```json ` tells GitHub to respect your exact spacing and add syntax highlighting.
-2.  **Lists:** Adding the asterisk and a space (`* `) in front of your scenarios and highlights forces GitHub to render them as clean, vertical bulleted lists instead of wrapping them into a single sentence.
+# 🔥 Engineering Highlights
+
+This project focuses heavily on **backend workflow reliability concepts** rather than simple automation.
+
+### Key Backend Engineering Patterns
+
+- Validation gates
+- Idempotency protection
+- Retry handling
+- Failure recovery
+- Execution observability
+- Structured API responses
+- Workflow resilience
+- Audit logging
+
+---
+
+# 🚀 Future Improvements
+
+Potential future enhancements:
+
+- Inventory management integration
+- AI-based fraud detection
+- Slack/Discord notifications
+- Dead-letter queue implementation
+- Grafana monitoring dashboard
+- Rate limiting
+- Authentication & authorization
+- Stripe payment integration
+
+---
+
+# 👩‍💻 Author
+
+Built by **Snigdha Raghavan** as a workflow engineering and backend automation project using **n8n** and **Supabase**.
