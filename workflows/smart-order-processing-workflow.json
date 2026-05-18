@@ -1,0 +1,527 @@
+{
+  "name": "smart-order-processing-workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-order",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "87dc8271-35e3-410b-8027-6c107dddb998",
+      "name": "Webhook",
+      "webhookId": "b78455a6-f700-4a70-a4ee-54e7d942afa9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "13b0c0c8-bf15-44aa-b06a-edb8cb791348",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "5ec9606e-208f-45f8-abfc-8f9acbba288a",
+      "name": "Email Validation"
+    },
+    {
+      "parameters": {
+        "tableId": "execution_logs",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "order_id",
+              "fieldValue": "={{$json.body.order_id}}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "validation_failed"
+            },
+            {
+              "fieldId": "message",
+              "fieldValue": "Missing email field"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        384,
+        112
+      ],
+      "id": "daeb7fc0-09ab-4e39-ac19-79602647081a",
+      "name": "Log Validation Failure",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zhMGKZfiFQUh9rlr",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"error\": \"Email is required\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        112
+      ],
+      "id": "932f5d73-16e1-49f8-9e64-956e231bb1ca",
+      "name": "Return Validation Error"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "orders",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "order_id",
+              "condition": "eq",
+              "keyValue": "={{$json.body.order_id}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -112
+      ],
+      "id": "d2fc95d2-abec-43d6-9315-f05d276c7ddb",
+      "name": "Check Existing Order",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "zhMGKZfiFQUh9rlr",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "68162085-9b88-4d5d-9dc6-7874fe5d7211",
+              "leftValue": "={{$json.order_id}}",
+              "rightValue": "={{$node[\"Webhook\"].json[\"body\"][\"order_id\"]}}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        -112
+      ],
+      "id": "fb904aaa-2d2a-45a3-b65d-2e2f5219707c",
+      "name": "Duplicate Order Validation",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "tableId": "execution_logs",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "validation_failed"
+            },
+            {
+              "fieldId": "message",
+              "fieldValue": "Duplicate order ID"
+            },
+            {
+              "fieldId": "order_id",
+              "fieldValue": "={{ $('Email Validation').item.json.body.order_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -224
+      ],
+      "id": "beb82d02-03b1-447d-8634-f97dfb38e9de",
+      "name": "Log Duplicate Order",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zhMGKZfiFQUh9rlr",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"error\": \"Duplicate order ID\"\n}",
+        "options": {
+          "responseCode": 409
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        944,
+        -224
+      ],
+      "id": "45df72e0-3bb1-4545-b682-03e8e1639a89",
+      "name": "Return Duplicate Error"
+    },
+    {
+      "parameters": {
+        "tableId": "orders",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "=order_id",
+              "fieldValue": "={{$node[\"Webhook\"].json[\"body\"][\"order_id\"]}}"
+            },
+            {
+              "fieldId": "customer_name",
+              "fieldValue": "={{$node[\"Webhook\"].json[\"body\"][\"customer_name\"]}}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{$node[\"Webhook\"].json[\"body\"][\"email\"]}}"
+            },
+            {
+              "fieldId": "total_amount",
+              "fieldValue": "={{$node[\"Webhook\"].json[\"body\"][\"total_amount\"]}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -16
+      ],
+      "id": "042d97e0-d48d-4578-a65c-3d9d248b0118",
+      "name": "Create Order",
+      "retryOnFail": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "zhMGKZfiFQUh9rlr",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "execution_logs",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "order_id",
+              "fieldValue": "={{ $('Create Order').item.json.order_id }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "success"
+            },
+            {
+              "fieldId": "message",
+              "fieldValue": "Order inserted successfully"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        -112
+      ],
+      "id": "3eff4d84-397c-4ff4-83cc-262bd72158ed",
+      "name": "Log Successful Order",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zhMGKZfiFQUh9rlr",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Order created successfully\"\n}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1264,
+        -112
+      ],
+      "id": "a6ed62be-b3d4-4e3e-aad1-30e8b52c5b81",
+      "name": "Return Success Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const success = Math.random() > 0.5;\n\nif (success) {\n  return [\n    {\n      json: {\n        payment_status: \"success\"\n      }\n    }\n  ];\n}\n\nthrow new Error(\"Payment gateway timeout\");"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        -16
+      ],
+      "id": "16453615-ce5e-47e5-9310-98eedf220269",
+      "name": "Process Payment",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"error\": \"Payment processing failed\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1296,
+        128
+      ],
+      "id": "168c0967-6c96-44e3-bf12-e4ad4ffce63a",
+      "name": "Return Payment Failure"
+    },
+    {
+      "parameters": {
+        "tableId": "execution_logs",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "order_id",
+              "fieldValue": "={{ $('Create Order').item.json.order_id }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "={{$json.error.message}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        128
+      ],
+      "id": "208335da-9a88-4662-8342-1d1b1081bee1",
+      "name": "Log Payment Failure",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zhMGKZfiFQUh9rlr",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Email Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Validation": {
+      "main": [
+        [
+          {
+            "node": "Check Existing Order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Validation Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Validation Failure": {
+      "main": [
+        [
+          {
+            "node": "Return Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing Order": {
+      "main": [
+        [
+          {
+            "node": "Duplicate Order Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Duplicate Order Validation": {
+      "main": [
+        [
+          {
+            "node": "Log Duplicate Order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Duplicate Order": {
+      "main": [
+        [
+          {
+            "node": "Return Duplicate Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Order": {
+      "main": [
+        [
+          {
+            "node": "Process Payment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Successful Order": {
+      "main": [
+        [
+          {
+            "node": "Return Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Payment": {
+      "main": [
+        [
+          {
+            "node": "Log Successful Order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Payment Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Payment Failure": {
+      "main": [
+        [
+          {
+            "node": "Return Payment Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "34bda16d-331c-4f0f-aeee-e92dfc2d104c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "356644b3463be45e91fc289d9b3056ed2ed7c7615f440a1896b939a901f19c44"
+  },
+  "id": "MVoGUmvfKvHdftcD",
+  "tags": []
+}
